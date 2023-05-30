@@ -6,7 +6,7 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 import numpy
 import os
 
-MODEL_SAVE_NAME = "handwritten.model"
+MODEL_SAVE_NAME = "data/handwritten.model"
 
 def main() -> None:
     mnist = tf.keras.datasets.mnist
