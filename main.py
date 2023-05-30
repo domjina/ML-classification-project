@@ -124,5 +124,5 @@ if __name__ == "__main__":
     train_X = tf.keras.utils.normalize(train_X, axis=1)
     test_X = tf.keras.utils.normalize(test_X, axis=1)
 
-    # neural_network()
+    neural_network()
     k_means_clustering()
