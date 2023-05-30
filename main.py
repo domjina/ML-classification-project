@@ -9,6 +9,8 @@ import random
 import seaborn as sns
 from collections import Counter
 
+random.seed(2023)
+
 MODEL_SAVE_NAME = "data/handwritten.model"
 
 
@@ -58,9 +60,9 @@ def neural_network() -> None:
         raise ValueError(f"Could not load model {MODEL_SAVE_NAME}")
 
 
-def k_means_clustering() -> None:
+def k_means_clustering(k: int) -> tuple[float, float, float, float]:
     KNN_train_X = np.array(train_X).reshape(60000, 784)
-    NUM_OF_CENTROIDS = 10
+    NUM_OF_CENTROIDS = k
     centroids = KNN_train_X[np.random.choice(KNN_train_X.shape[0], NUM_OF_CENTROIDS, replace = False)]
     delta = 10000
     counter = 0
@@ -106,17 +108,15 @@ def k_means_clustering() -> None:
     y_pred = np.zeros(KMN_test_X.shape[0], dtype=int)
     for i in range(NUM_OF_CENTROIDS):
         indices = np.where(labels == i)[0]
-        majority_label = np.argmax(np.bincount(train_y[np.where(labels == i)[0]]))
-        y_pred[indices] = majority_label
+        if len(indices) > 0:
+            majority_label = np.argmax(np.bincount(train_y[indices]))
+            y_pred[indices] = majority_label
 
     accuracy = accuracy_score(test_y, y_pred)
-    print(f'Accuracy: {accuracy:.2f}')
     recall = recall_score(test_y, y_pred, average='macro')
-    print(f'Recall: {recall:.2f}')
     precision = precision_score(test_y, y_pred, average='macro', zero_division=0)
-    print(f'Precision: {precision:.2f}')
     f1 = f1_score(test_y, y_pred, average='macro')
-    print(f'F1-score: {f1:.2f}')
+    return accuracy, precision, recall, f1 # type: ignore
 
 if __name__ == "__main__":
     mnist = tf.keras.datasets.mnist
@@ -124,5 +124,20 @@ if __name__ == "__main__":
     train_X = tf.keras.utils.normalize(train_X, axis=1)
     test_X = tf.keras.utils.normalize(test_X, axis=1)
 
-    neural_network()
-    k_means_clustering()
+    # neural_network()
+    best_k = 0
+    best_accuracy = 0.0
+    best_precision = 0.0
+    best_recall = 0.0
+    best_f1 = 0.0
+    for k in range(1, 21):
+        print(f"Run: {k}")
+        accuracy, precision, recall, f1 = k_means_clustering(k)
+        if f1 > best_f1:
+            best_k = k
+            best_accuracy = accuracy
+            best_precision = precision
+            best_recall = recall
+            best_f1 = f1
+
+    print(f'Best results: k={best_k}, accuracy={best_accuracy:.2f}, precision={best_precision:.2f}, recall={best_recall:.2f}, f1={best_f1:.2f}')
