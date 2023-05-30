@@ -17,22 +17,20 @@ def main() -> None:
     if not (os.path.exists(MODEL_SAVE_NAME)):
         model = tf.keras.models.Sequential()
 
-        # Input layer - shape: (784,)
-        # This is the flattened shape of each handwritten digit
         model.add(
-            tf.keras.layers.Flatten(input_shape=(28, 28))
+            tf.keras.layers.Flatten(input_shape=(28, 28), name="input_layer")
         )
 
         model.add(
-            tf.keras.layers.Dense(128, activation="relu")
+            tf.keras.layers.Dense(128, activation="relu", name="layer_2")
         )
 
         model.add(
-            tf.keras.layers.Dense(128, activation="relu")
+            tf.keras.layers.Dense(128, activation="relu", name="layer_3")
         )
 
         model.add(
-            tf.keras.layers.Dense(10, activation="softmax")
+            tf.keras.layers.Dense(10, activation="softmax", name="output_layer")
         )
 
         model.compile(
@@ -46,6 +44,7 @@ def main() -> None:
         model.save(MODEL_SAVE_NAME)
     
     model = tf.keras.models.load_model(MODEL_SAVE_NAME)
+    model.summary()
     loss, accuracy = model.evaluate(test_X, test_y)
     print(loss)
     print(accuracy)
