@@ -16,4 +16,5 @@ Following on, I compile the neural network and fit the data, using the "adam opt
 The results are as follows:
 
 loss: 0.09478... (how well the NN models the training data)
+
 accuracy: 0.97 (ratio between correct predictions and total predictions)
