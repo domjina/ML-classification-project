@@ -15,7 +15,7 @@ random.seed(2023)
 MODEL_SAVE_NAME = "data/handwritten.model"
 
 
-def neural_network() -> None:
+def neural_network(train_X: np.ndarray, train_y: np.ndarray, test_X: np.ndarray, test_y: np.ndarray) -> None:
     mnist = tf.keras.datasets.mnist
     (train_X, train_y), (test_X, test_y) = mnist.load_data()
     train_X = tf.keras.utils.normalize(train_X, axis=1)
@@ -61,12 +61,11 @@ def neural_network() -> None:
         raise ValueError(f"Could not load model {MODEL_SAVE_NAME}")
 
 
-def k_means_clustering(k: int) -> tuple[float, float, float, float]:
+def k_means_clustering(k: int, train_X: np.ndarray, train_y: np.ndarray, test_X: np.ndarray, test_y: np.ndarray) -> tuple[float, float, float, float]:
     pca = PCA(n_components=50)
     KMN_train_X = np.array(train_X).reshape(60000, 784)
     pca.fit(KMN_train_X)
     KMN_train_X = pca.transform(KMN_train_X)
-    # print(KMN_train_X.shape)
     NUM_OF_CENTROIDS = k
     centroids = KMN_train_X[np.random.choice(KMN_train_X.shape[0], NUM_OF_CENTROIDS, replace = False)]
     delta = 10000
@@ -125,14 +124,17 @@ def k_means_clustering(k: int) -> tuple[float, float, float, float]:
     f1 = f1_score(test_y, y_pred, average='macro')
     return accuracy, precision, recall, f1 # type: ignore
 
-if __name__ == "__main__":
-    mnist = tf.keras.datasets.mnist
-    (train_X, train_y), (test_X, test_y) = mnist.load_data()
-    train_X = tf.keras.utils.normalize(train_X, axis=1)
-    test_X = tf.keras.utils.normalize(test_X, axis=1)
+def knn(train_X: np.ndarray, train_y: np.ndarray, test_X: np.ndarray, test_y: np.ndarray):
+    neigh = KNeighborsClassifier(n_neighbors=11)
+    neigh.fit(train_X.reshape(60000,784), train_y)
+    predicted = neigh.predict(test_X.reshape(10000,784))
+    score = 0
+    for i in range(0,len(predicted)):
+        if predicted[i] == test_y[i]:
+            score += 1
+    print(score/10000)
 
-    # neural_network()
-    
+def knn_best_k(train_X: np.ndarray, train_y: np.ndarray, test_X: np.ndarray, test_y: np.ndarray):
     best_k = 0
     best_accuracy = 0.0
     best_precision = 0.0
@@ -140,7 +142,7 @@ if __name__ == "__main__":
     best_f1 = 0.0
     for k in range(1, 21):
         print(f"Run: {k}")
-        accuracy, precision, recall, f1 = k_means_clustering(k)
+        accuracy, precision, recall, f1 = k_means_clustering(k, train_X, train_y, test_X, test_y)
         if f1 > best_f1:
             best_k = k
             best_accuracy = accuracy
@@ -149,3 +151,19 @@ if __name__ == "__main__":
             best_f1 = f1
 
     print(f'Best results: k={best_k}, accuracy={best_accuracy:.2f}, precision={best_precision:.2f}, recall={best_recall:.2f}, f1={best_f1:.2f}')
+
+def data_processing() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    mnist = tf.keras.datasets.mnist
+    (train_X, train_y), (test_X, test_y) = mnist.load_data()
+    train_X = tf.keras.utils.normalize(train_X, axis=1)
+    test_X = tf.keras.utils.normalize(test_X, axis=1)
+    return train_X, train_y, test_X, test_y
+
+def main() -> None:
+    train_X, train_y, test_X, test_y = data_processing()
+    print(type(train_X), type(train_y), type(test_X), type(test_y))
+    # neural_network(train_X, train_y, test_X, test_y)
+    # knn_best_k(train_X, train_y, test_X, test_y)
+
+if __name__ == "__main__":
+    main()
